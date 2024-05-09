@@ -4,20 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 import safari.wfp.exception.CustomException;
-import safari.wfp.model.LoginDTO;
 import safari.wfp.model.UserEntity;
 
 import javax.ws.rs.core.Response;
@@ -29,62 +22,68 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepresentation userRepresentation;
     private final CredentialRepresentation passwordMapper;
-    private final WebClient webClient;
     private final ModelMapper modelMapper;
     private final UsersResource usersResource;
-
-    @Value("${keycloak.client.id}")
-    private String clientId;
-
-    @Value("${keycloak.client.secret}")
-    private String clientSecret;
 
     public List<UserEntity> getUsers() {
         List<UserRepresentation> userRepresentations = usersResource.list();
         List<UserEntity> userList = new ArrayList<>();
         for (UserRepresentation userRep : userRepresentations) {
             UserEntity user = new UserEntity();
-            user.setUserName(userRep.getUsername());
-            user.setEmail(userRep.getEmail());
+            user.setId(userRep.getId());
             user.setFirstName(userRep.getFirstName());
             user.setLastName(userRep.getLastName());
-            user.setId(userRep.getId());
-            // You should add the 'user' object to the list
+            user.setUserName(userRep.getUsername());
+            user.setEmail(userRep.getEmail());
+            user.setRoleNames(getRealmRolesFromUser(user.getId()));
             userList.add(user);
         }
         return userList;
     }
 
+    private List<String> getRealmRolesFromUser(String userId) {
+        List<RoleRepresentation> roleRepresentations = usersResource.get(userId).roles().realmLevel().listAvailable();
+        return roleRepresentations.stream().map(RoleRepresentation::getName).toList();
+    }
+
 
     public ResponseEntity<String> createUser(UserEntity user) {
-
+        UserRepresentation newUser = modelMapper.map(user, UserRepresentation.class);
         passwordMapper.setValue(user.getPassword());
-        userRepresentation.setUsername(user.getUserName());
-        userRepresentation.setFirstName(user.getFirstName());
-        userRepresentation.setLastName(user.getLastName());
-        userRepresentation.setEmail(user.getEmail());
-        userRepresentation.setCredentials(List.of(passwordMapper));
-        userRepresentation.setEnabled(true);
-        List<String> roles = new ArrayList<>();
-        roles.add("user");
-        userRepresentation.setRealmRoles(roles);
-
+        newUser.setCredentials(List.of(passwordMapper));
+        newUser.setEnabled(true);
         try {
-            Response response = usersResource.create(userRepresentation);
-            if (response.getStatus() != 201) {
-                System.err.println("Failed to create user: " + response.getStatusInfo());
-                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            Response response = usersResource.create(newUser);
+            if (response.getStatus() == 201) {
+                log.info("Response |  Status: {} | Status Info: {}", response.getStatus(), response.getStatusInfo());
+                String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+                mapRealmRolesToUser(userId, user.getRoleNames());
+                return new ResponseEntity<>(HttpStatus.CREATED);
             }
-            log.info("user created");
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            throw new CustomException("Failed to create user");
         } catch (Exception ex) {
             throw new CustomException(ex.getMessage());
         }
     }
 
-    public List<UserRepresentation> getUser(String userName){
+    private void mapRealmRolesToUser(String userId, List<String> roleNames) {
+        List<RoleRepresentation> roles = usersResource.get(userId).roles().realmLevel().listAvailable();
+
+        for (String roleName : roleNames) {
+            RoleRepresentation role = roles.stream()
+                    .filter(r -> r.getName().equals(roleName))
+                    .findFirst()
+                    .orElse(null);
+            if (role != null) {
+                usersResource.get(userId).roles().realmLevel().add(List.of(role));
+            } else {
+                System.err.println("Role not found: " + roleName);
+            }
+        }
+    }
+
+    public List<UserRepresentation> getUser(String userName) {
         return usersResource.search(userName, true);
     }
 
@@ -92,58 +91,36 @@ public class UserService {
         try {
             UserRepresentation user = modelMapper.map(userDTO, UserRepresentation.class);
             usersResource.get(userId).update(user);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new CustomException(ex.getMessage());
         }
     }
 
-    public void deleteUser(String userId){
+    public void deleteUser(String userId) {
         try {
             usersResource.get(userId)
                     .remove();
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw new CustomException(ex.getMessage());
         }
     }
 
-    public void sendVerificationLink(String userId){
+    public void sendVerificationLink(String userId) {
         try {
             usersResource.get(userId)
                     .sendVerifyEmail();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             throw new CustomException(ex.getMessage());
         }
     }
 
-    public void sendResetPassword(String userId){
+    public void sendResetPassword(String userId) {
         try {
             usersResource.get(userId)
                     .executeActionsEmail(List.of("UPDATE_PASSWORD"));
-        }catch (Exception ex){
+        } catch (Exception ex) {
             throw new CustomException(ex.getMessage());
         }
-    }
-
-    public ResponseEntity<?> signIn(LoginDTO loginDTO) {
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
-        body.add("username", loginDTO.getUsername());
-        body.add("password", loginDTO.getPassword());
-        body.add("grant_type", "password");
-
-        return webClient
-                .post()
-                .uri("http://localhost:8080/realms/safari/protocol/openid-connect/token")
-                .headers(h -> h.addAll(headers))
-                .body(BodyInserters.fromFormData(body))
-                .retrieve()
-                .toEntity(String.class)
-                .block();
     }
 
 }

@@ -19,7 +19,9 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity serverHttpSecurity) {
         serverHttpSecurity.authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/agents/get").authenticated()
+                        .pathMatchers("/api/users/**").hasRole("ADMIN")
+                        .pathMatchers("/api/agents/**").hasRole("AGENT")
+                        .pathMatchers("/api/auth/**").permitAll()
                         .anyExchange().permitAll())
                 .oauth2ResourceServer(oAuth2ResourceServerSpec -> oAuth2ResourceServerSpec
                         .jwt(jwtSpec -> jwtSpec.jwtAuthenticationConverter(grantedAuthoritiesExtractor())));

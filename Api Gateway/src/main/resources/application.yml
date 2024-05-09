@@ -6,10 +6,10 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: Product-Service
-          uri: lb://PRODUCT-SERVICE
+        - id: Authentication
+          uri: lb://AUTHENTICATION
           predicates:
-            - Path=/api/products/**
+            - Path=/api/auth/**
 
         - id: Agent-Service
           uri: lb://AGENT-SERVICE

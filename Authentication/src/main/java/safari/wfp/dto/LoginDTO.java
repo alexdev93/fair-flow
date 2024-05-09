@@ -1,4 +1,4 @@
-package safari.wfp.model;
+package safari.wfp.dto;
 
 import lombok.Data;
 

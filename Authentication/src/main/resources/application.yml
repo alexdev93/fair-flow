@@ -1,6 +1,8 @@
 spring:
   application:
-    name: Product-Service
+    name: Authentication
+  main:
+    web-application-type: reactive
 
 eureka:
   instance:
@@ -19,3 +21,9 @@ management:
 
 server:
   port: 0
+
+keycloak:
+  url: http://localhost:8080/realms/safari/protocol/openid-connect/token
+  client:
+    id: fairflow
+    secret: SqqoTyrdOH1tKD8EsZ2mSjwV9DxDhLcX

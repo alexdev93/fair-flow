@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import safari.wfp.model.LoginDTO;
+import safari.wfp.dto.LoginDTO;
 import safari.wfp.model.UserEntity;
 import safari.wfp.service.UserService;
 
@@ -57,9 +57,4 @@ public class UserController {
         return "Reset Password Link Send Successfully to Registered E-mail Id.";
     }
 
-    @ResponseBody
-    @PostMapping(path = "/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDto) {
-        return userService.signIn(loginDto);
-    }
 }

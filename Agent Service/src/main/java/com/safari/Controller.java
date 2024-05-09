@@ -12,28 +12,9 @@ import reactor.core.publisher.Mono;
 @RequestMapping(path = "/api/agents")
 public class Controller {
 
-    @Autowired
-    private WebClient.Builder webClientBuilder;
     @GetMapping(path = "/get")
     public String welcome(){
         return "Hello agent service";
-    }
-
-    @GetMapping(path = "/message")
-    public String getMessage() {
-        try {
-            Mono<String> responseData = webClientBuilder.baseUrl("http://Product-Service").build().get()
-                    .uri("/api/products/get")
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .map(response -> response )
-                    .defaultIfEmpty("some error");
-            return responseData.block() + " within agent service";
-
-        } catch (WebClientException ex){
-            System.out.println(ex.getMessage());
-            return ex.getMessage();
-        }
     }
 
 
