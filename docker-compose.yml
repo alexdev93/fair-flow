@@ -7,6 +7,34 @@ services:
     ports:
       - "8761:8761"
 
+  fairflow-app:
+    build:
+      context: ./Fairflow-App
+      dockerfile: Dockerfile
+    ports:
+      - target: 0
+        published: 0
+
+    networks:
+      - fair-flow-net
+    depends_on:
+      - service-discovery
+
+
+  fairflow-transactions:
+    build:
+      context: ./Fairflow-Transactions
+      dockerfile: Dockerfile
+    ports:
+      - target: 0
+        published: 0
+
+    networks:
+      - fair-flow-net
+    depends_on:
+      - service-discovery
+
+
   authentication-service:
     build:
       context: ./Authentication
@@ -55,6 +83,20 @@ services:
     networks:
       - keycloak_network
 
+
+  postgres-app:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: admin
+      POSTGRES_DB: fairflow
+    ports:
+      - 5433:5433
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fair-flow-net
+
   keycloak:
     image: quay.io/keycloak/keycloak:20.0
     environment:
@@ -79,4 +121,6 @@ volumes:
 
 networks:
   fair-flow-net:
+    driver: bridge
+  keycloak_network:
     driver: bridge
