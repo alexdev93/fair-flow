@@ -14,18 +14,18 @@ services:
       timeout: 10s
       retries: 3
 
-#  auth-service:
-#    build:
-#      context: ./Authentication
-#      dockerfile: Dockerfile
-#    ports:
-#      - target: 9191
-#      - published: 9191
-#    networks:
-#      - fairflow_network
-#    depends_on:
-#      service-discovery:
-#        condition: service_healthy
+  auth-service:
+    build:
+      context: ./Authentication
+      dockerfile: Dockerfile
+    ports:
+      - target: 0
+        published: 0
+    networks:
+      - fairflow_network
+    depends_on:
+      service-discovery:
+        condition: service_healthy
 
   agent-service:
     build:
@@ -40,19 +40,18 @@ services:
       service-discovery:
         condition: service_healthy
 
-#  fairflow-app:
-#    build:
-#      context: ./Fairflow-App
-#      dockerfile: Dockerfile
-#    ports:
-#      - 9999:9999
-#    networks:
-#      - fairflow_network
-#    depends_on:
-#      service-discovery:
-#        condition: service_started
-#      postgres-app:
-#        condition: service_started
+  fairflow-app:
+    build:
+      context: ./Fairflow-App
+      dockerfile: Dockerfile
+    ports:
+      - target: 0
+        published: 0
+    networks:
+      - fairflow_network
+    depends_on:
+      service-discovery:
+        condition: service_healthy
 
   user-service:
     build:
@@ -92,18 +91,18 @@ services:
     networks:
       - fairflow_network
 
-#  postgres-app:
-#    image: postgres:latest
-#    environment:
-#      POSTGRES_PASSWORD: 1234
-#      POSTGRES_USER: admin
-#      POSTGRES_DB: fairflow
-#    ports:
-#      - 5433:5433
-#    volumes:
-#      - app_data:/var/lib/postgresql/data_app
-#    networks:
-#      - fairflow_network
+  postgres-app:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: admin
+      POSTGRES_DB: fairflow
+    ports:
+      - 5433:5433
+    volumes:
+      - app_data:/var/lib/postgresql/data_app
+    networks:
+      - fairflow_network
 
   keycloak:
     image: quay.io/keycloak/keycloak:20.0
@@ -119,13 +118,12 @@ services:
     command:
       - start-dev
     volumes:
-      - keycloak_data:/opt/jboss/keycloak/standalone/data
+      - ./docker-data/keycloak_data:/opt/jboss/keycloak/standalone/data
     networks:
       - fairflow_network
 
 volumes:
   postgres_data:
-  keycloak_data:
   app_data:
 
 networks:
