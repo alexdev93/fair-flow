@@ -1,14 +1,17 @@
 package safari.wfp.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 @AllArgsConstructor
-public class ErrorResponseDto {
+public class ErrorResponseDTO {
 
     private  String apiPath;
 
@@ -16,11 +19,5 @@ public class ErrorResponseDto {
 
     private  String errorMessage;
 
-    private LocalDateTime errorTime;
-
-
-    public ErrorResponseDto(HttpStatus httpStatus, String message) {
-        this.errorCode = httpStatus;
-        this.errorMessage = message;
-    }
+    private String methodName;
 }

@@ -4,9 +4,9 @@ FROM openjdk:17
 WORKDIR /app
 
 # Copy the JAR file into the container at /app
-COPY target/Api-Gateway-0.0.1-SNAPSHOT.jar /app/app.jar
+COPY target/Agent-Service-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # Specify the command to run on container startup
 CMD ["java", "-jar", "app.jar"]
 
-EXPOSE 8181
+EXPOSE 9191

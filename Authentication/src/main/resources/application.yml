@@ -11,7 +11,7 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://service-discovery:8761/eureka/
 
 #Tracing
 management:
@@ -23,7 +23,7 @@ server:
   port: 0
 
 keycloak:
-  url: http://localhost:8080/realms/safari/protocol/openid-connect/token
+  url: http://keycloak:8080/realms/safari/protocol/openid-connect/token
   client:
     id: fairflow
     secret: SqqoTyrdOH1tKD8EsZ2mSjwV9DxDhLcX

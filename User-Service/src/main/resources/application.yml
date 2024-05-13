@@ -23,10 +23,10 @@ server:
   port: 0
 
 keycloak:
-  url: http://localhost:8080
+  url: http://keycloak:8080
   client:
     id: fairflow
-    secret: SqqoTyrdOH1tKD8EsZ2mSjwV9DxDhLcX
-  username: admin123
+    secret: 3thEeC87gO1MhtT9vSAhY9vV2mV2oEY7
+  username: admin
   password: admin
   realm: safari

@@ -12,11 +12,10 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://service-discovery:8761/eureka/
 
 server:
   port: 0
-
 
 #Actuator and circuit breaker
 management:
@@ -34,27 +33,3 @@ management:
   tracing:
     sampling:
       probability: 1.0
-
-resilience4j:
-  circuitbreaker:
-    instances:
-      Product-Service:
-        registerHealthIndicator: true
-        event-consumer-buffer-size: 100
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 5s
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-
-  timelimiter:
-    instances:
-      Product-Service:
-        timeout-duration: 3s
-
-  retry:
-    instances:
-      Product-Service:
-        max-attempts: 3
-        wait-duration: 5s

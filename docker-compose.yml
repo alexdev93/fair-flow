@@ -1,51 +1,58 @@
-version: '3'
 services:
+
   service-discovery:
     build:
       context: ./Service Discovery
       dockerfile: Dockerfile
     ports:
-      - "8761:8761"
-
-  fairflow-app:
-    build:
-      context: ./Fairflow-App
-      dockerfile: Dockerfile
-    ports:
-      - target: 0
-        published: 0
-
+      - 8761:8761
     networks:
-      - fair-flow-net
-    depends_on:
-      - service-discovery
+      - fairflow_network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+#  auth-service:
+#    build:
+#      context: ./Authentication
+#      dockerfile: Dockerfile
+#    ports:
+#      - target: 9191
+#      - published: 9191
+#    networks:
+#      - fairflow_network
+#    depends_on:
+#      service-discovery:
+#        condition: service_healthy
 
-  fairflow-transactions:
+  agent-service:
     build:
-      context: ./Fairflow-Transactions
-      dockerfile: Dockerfile
-    ports:
-      - target: 0
-        published: 0
-
-    networks:
-      - fair-flow-net
-    depends_on:
-      - service-discovery
-
-
-  authentication-service:
-    build:
-      context: ./Authentication
+      context: ./Agent Service
       dockerfile: Dockerfile
     ports:
       - target: 0
         published: 0
     networks:
-      - fair-flow-net
+      - fairflow_network
     depends_on:
-      - service-discovery
+      service-discovery:
+        condition: service_healthy
+
+#  fairflow-app:
+#    build:
+#      context: ./Fairflow-App
+#      dockerfile: Dockerfile
+#    ports:
+#      - 9999:9999
+#    networks:
+#      - fairflow_network
+#    depends_on:
+#      service-discovery:
+#        condition: service_started
+#      postgres-app:
+#        condition: service_started
 
   user-service:
     build:
@@ -55,20 +62,22 @@ services:
       - target: 0
         published: 0
     networks:
-      - fair-flow-net
+      - fairflow_network
     depends_on:
-      - service-discovery
+      service-discovery:
+        condition: service_healthy
 
   api-gateway:
     build:
       context: ./Api Gateway
       dockerfile: Dockerfile
     ports:
-      - "8181:8181"
+      - 8181:8181
     networks:
-      - fair-flow-net
+      - fairflow_network
     depends_on:
-      - service-discovery
+      service-discovery:
+        condition: service_healthy
 
   postgres:
     image: postgres:latest
@@ -81,21 +90,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - keycloak_network
+      - fairflow_network
 
-
-  postgres-app:
-    image: postgres:latest
-    environment:
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_USER: admin
-      POSTGRES_DB: fairflow
-    ports:
-      - 5433:5433
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - fair-flow-net
+#  postgres-app:
+#    image: postgres:latest
+#    environment:
+#      POSTGRES_PASSWORD: 1234
+#      POSTGRES_USER: admin
+#      POSTGRES_DB: fairflow
+#    ports:
+#      - 5433:5433
+#    volumes:
+#      - app_data:/var/lib/postgresql/data_app
+#    networks:
+#      - fairflow_network
 
   keycloak:
     image: quay.io/keycloak/keycloak:20.0
@@ -107,20 +115,18 @@ services:
       KC_DB_USERNAME: admin
       KC_DB_PASSWORD: admin
     ports:
-      - 9090:8080
+      - 8080:8080
     command:
       - start-dev
     volumes:
       - keycloak_data:/opt/jboss/keycloak/standalone/data
     networks:
-      - fair-flow-net
+      - fairflow_network
 
 volumes:
   postgres_data:
   keycloak_data:
+  app_data:
 
 networks:
-  fair-flow-net:
-    driver: bridge
-  keycloak_network:
-    driver: bridge
+  fairflow_network:

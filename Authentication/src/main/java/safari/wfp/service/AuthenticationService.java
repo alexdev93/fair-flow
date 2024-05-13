@@ -10,6 +10,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 import safari.wfp.dto.LoginDTO;
 
 @Service
@@ -24,7 +25,7 @@ public class AuthenticationService {
     private String clientSecret;
     @Value("${keycloak.url}")
     private String issueUri;
-    public ResponseEntity<?> signIn(LoginDTO loginDTO) {
+    public Mono<ResponseEntity<String>> signIn(LoginDTO loginDTO) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -42,7 +43,6 @@ public class AuthenticationService {
                 .headers(h -> h.addAll(headers))
                 .body(BodyInserters.fromFormData(body))
                 .retrieve()
-                .toEntity(String.class)
-                .block();
+                .toEntity(String.class);
     }
 }

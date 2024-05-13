@@ -16,6 +16,7 @@ import safari.wfp.model.UserEntity;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,8 +44,10 @@ public class UserService {
     }
 
     private List<String> getRealmRolesFromUser(String userId) {
-        List<RoleRepresentation> roleRepresentations = usersResource.get(userId).roles().realmLevel().listAvailable();
-        return roleRepresentations.stream().map(RoleRepresentation::getName).toList();
+        List<RoleRepresentation> roleRepresentations = usersResource.get(userId).roles().realmLevel().listEffective();
+        return roleRepresentations.stream()
+                .map(RoleRepresentation::getName)
+                .collect(Collectors.toList());
     }
 
 
