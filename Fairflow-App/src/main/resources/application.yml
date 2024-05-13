@@ -1,6 +1,9 @@
 spring:
   application:
     name: Fairflow-App
+  main:
+    web-application-type: reactive
+
   datasource:
     url: jdbc:postgresql://postgres-app:5433/fairflow
     username: admin
@@ -30,5 +33,5 @@ management:
       probability: 1.0
 
 server:
-  port: 9999
+  port: 0
 
