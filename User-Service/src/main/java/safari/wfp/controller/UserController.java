@@ -22,6 +22,11 @@ public class UserController {
         return userService.getUsers();
     }
 
+    @GetMapping("/hello")
+    public String hello() {
+        return "hello";
+    }
+
     @ResponseBody
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserEntity user) {

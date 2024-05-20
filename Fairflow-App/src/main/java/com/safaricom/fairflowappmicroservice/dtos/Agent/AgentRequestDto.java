@@ -26,12 +26,14 @@ public class AgentRequestDto {
     @Pattern(regexp = "^\\w{1,30}$", message = "Invalid middle name, make sure it is less than 30 characters")
     private String middleName;
 
-    @Nullable
     @Email(message = "Invalid Email")
     private String email;
     @NotNull
     @Pattern(regexp = "^(251|0)7\\d{8}$", message = "Invalid Safaricom phone number")
     private String phoneNumber;
+
+    @NotNull
+    private String password;
 
     @NotNull
     @Past(message = "Date of Birth must be in the past")

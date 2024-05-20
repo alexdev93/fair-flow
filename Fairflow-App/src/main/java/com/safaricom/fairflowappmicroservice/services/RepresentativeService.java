@@ -2,12 +2,17 @@ package com.safaricom.fairflowappmicroservice.services;
 
 import com.safaricom.fairflowappmicroservice.dtos.Payment.PaymentRequestDto;
 import com.safaricom.fairflowappmicroservice.dtos.Representative.RepresentativeRequestDto;
+import com.safaricom.fairflowappmicroservice.dtos.User.UserCreate;
 import com.safaricom.fairflowappmicroservice.exceptions.NotFoundException;
 import com.safaricom.fairflowappmicroservice.models.Organization;
 import com.safaricom.fairflowappmicroservice.models.Representative;
 import com.safaricom.fairflowappmicroservice.repositories.RepresentativeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
@@ -17,6 +22,9 @@ public class RepresentativeService {
     private final RepresentativeRepository representativeRepository;
     private final BeneficiaryService beneficiaryService;
     private final OrganizationService organizationService;
+
+    @Autowired
+    private WebClient webClient;
 
     @Autowired
     public RepresentativeService(RepresentativeRepository representativeRepository, BeneficiaryService beneficiaryService, OrganizationService organizationService) {
@@ -31,9 +39,19 @@ public class RepresentativeService {
     }
 
     public Representative saveRepresentative(RepresentativeRequestDto representativeDto, Long organizationId) {
+
+        UserCreate userCreate = new UserCreate(representativeDto);
+        webClient.post()
+                .uri("http://USER-SERVICE/api/v1/users")
+                .bodyValue(userCreate).retrieve()
+                .bodyToMono(UserCreate.class)
+                .block();
+
         Organization organization = organizationService.getOrganization(organizationId);
         Representative representative = new Representative(representativeDto);
         representative.setOrganization(organization);
+
+
         return representativeRepository.save(representative);
     }
 

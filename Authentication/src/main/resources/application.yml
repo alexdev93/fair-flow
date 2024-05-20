@@ -26,4 +26,4 @@ keycloak:
   url: http://keycloak:8080/realms/safari/protocol/openid-connect/token
   client:
     id: fairflow
-    secret: SqqoTyrdOH1tKD8EsZ2mSjwV9DxDhLcX
+    secret: WVzvKQ3CNgbZCLEmHNOloO5KKWb2XbRB

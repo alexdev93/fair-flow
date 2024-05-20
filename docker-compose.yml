@@ -1,51 +1,52 @@
 services:
 
-  service-discovery:
-    build:
-      context: ./Service Discovery
-      dockerfile: Dockerfile
-    ports:
-      - 8761:8761
-    networks:
-      - fairflow_network
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8761" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
+#  service-discovery:
+#    build:
+#      context: ./Service Discovery
+#      dockerfile: Dockerfile
+#    ports:
+#      - 8761:8761
+#    networks:
+#      - fairflow_network
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://localhost:8761" ]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#
 #  auth-service:
 #    build:
 #      context: ./Authentication
 #      dockerfile: Dockerfile
 #    ports:
 #      - target: 9191
-#      - published: 9191
+#        published: 9191
 #    networks:
 #      - fairflow_network
 #    depends_on:
 #      service-discovery:
 #        condition: service_healthy
-
-  agent-service:
-    build:
-      context: ./Agent Service
-      dockerfile: Dockerfile
-    ports:
-      - target: 0
-        published: 0
-    networks:
-      - fairflow_network
-    depends_on:
-      service-discovery:
-        condition: service_healthy
-
+#
+#  agent-service:
+#    build:
+#      context: ./Agent Service
+#      dockerfile: Dockerfile
+#    ports:
+#      - target: 0
+#        published: 0
+#    networks:
+#      - fairflow_network
+#    depends_on:
+#      service-discovery:
+#        condition: service_healthy
+#
 #  fairflow-app:
 #    build:
 #      context: ./Fairflow-App
 #      dockerfile: Dockerfile
 #    ports:
-#      - 9999:9999
+#      - target: 0
+#        published: 0
 #    networks:
 #      - fairflow_network
 #    depends_on:
@@ -53,32 +54,32 @@ services:
 #        condition: service_started
 #      postgres-app:
 #        condition: service_started
-
-  user-service:
-    build:
-      context: ./User-Service
-      dockerfile: Dockerfile
-    ports:
-      - target: 0
-        published: 0
-    networks:
-      - fairflow_network
-    depends_on:
-      service-discovery:
-        condition: service_healthy
-
-  api-gateway:
-    build:
-      context: ./Api Gateway
-      dockerfile: Dockerfile
-    ports:
-      - 8181:8181
-    networks:
-      - fairflow_network
-    depends_on:
-      service-discovery:
-        condition: service_healthy
-
+#
+#  user-service:
+#    build:
+#      context: ./User-Service
+#      dockerfile: Dockerfile
+#    ports:
+#      - target: 0
+#        published: 0
+#    networks:
+#      - fairflow_network
+#    depends_on:
+#      service-discovery:
+#        condition: service_healthy
+#
+#  api-gateway:
+#    build:
+#      context: ./Api Gateway
+#      dockerfile: Dockerfile
+#    ports:
+#      - 8181:8181
+#    networks:
+#      - fairflow_network
+#    depends_on:
+#      service-discovery:
+#        condition: service_healthy
+#
   postgres:
     image: postgres:latest
     environment:
@@ -90,20 +91,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - fairflow_network
+      - keycloak_network
 
-#  postgres-app:
-#    image: postgres:latest
-#    environment:
-#      POSTGRES_PASSWORD: 1234
-#      POSTGRES_USER: admin
-#      POSTGRES_DB: fairflow
-#    ports:
-#      - 5433:5433
-#    volumes:
-#      - app_data:/var/lib/postgresql/data_app
-#    networks:
-#      - fairflow_network
+  postgres-app:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: admin
+      POSTGRES_DB: fairflow
+    ports:
+      - 5430:5432
+    volumes:
+      - app_data:/var/lib/postgresql/data_app
+    networks:
+      - fairflow_network
 
   keycloak:
     image: quay.io/keycloak/keycloak:20.0
@@ -121,7 +122,16 @@ services:
     volumes:
       - keycloak_data:/opt/jboss/keycloak/standalone/data
     networks:
-      - fairflow_network
+      - keycloak_network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # the jaeger UI port
+      - "4317:4317" # the open telemetry grpc port for sending traces
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - LOG_LEVEL=debug
 
 volumes:
   postgres_data:
@@ -130,3 +140,4 @@ volumes:
 
 networks:
   fairflow_network:
+  keycloak_network:

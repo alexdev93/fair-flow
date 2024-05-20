@@ -11,11 +11,6 @@ eureka:
     serviceUrl:
       defaultZone: http://service-discovery:8761/eureka/
 
-#Tracing
-management:
-  tracing:
-    sampling:
-      probability: 1.0
 
 server:
   port: 0
@@ -34,3 +29,20 @@ jpa:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoint:
+    health:
+      validate-group-membership: false
+      group:
+        liveliness:
+          include: diskSpace, db, ping
+  probes:
+    enabled: true
+
+tracing:
+  url: http://localhost:4317

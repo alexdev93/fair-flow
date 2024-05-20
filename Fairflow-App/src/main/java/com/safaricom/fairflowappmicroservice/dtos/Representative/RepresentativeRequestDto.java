@@ -31,4 +31,7 @@ public class RepresentativeRequestDto implements Serializable {
     @Pattern(regexp = "^(251|0)7\\d{8}$", message = "Invalid Safaricom phone number")
     private String phoneNumber;
 
+    @NotNull
+    private String password;
+
 }

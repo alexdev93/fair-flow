@@ -42,11 +42,11 @@ public class RepresentativeController {
                 HttpStatus.OK);
     }
 
-    @PostMapping("/{representativeId}")
+    @PostMapping("/{organizationId}")
     public ResponseEntity<RepresentativeResponseDto> saveRepresentative(@Valid @RequestBody RepresentativeRequestDto representativeDto,
-                                                                        @PathVariable Long representativeId) {
+                                                                        @PathVariable Long organizationId) {
         return new ResponseEntity<>(
-                new RepresentativeResponseDto(representativeService.saveRepresentative(representativeDto, representativeId)),
+                new RepresentativeResponseDto(representativeService.saveRepresentative(representativeDto, organizationId)),
                 HttpStatus.CREATED);
     }
 

@@ -1,11 +1,9 @@
 spring:
   application:
     name: Fairflow-App
-  main:
-    web-application-type: reactive
 
   datasource:
-    url: jdbc:postgresql://postgres-app:5433/fairflow
+    url: jdbc:postgresql://localhost:5430/fairflow
     username: admin
     password: 1234
     driver-class-name: org.postgresql.Driver
@@ -24,13 +22,23 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://service-discovery:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
 
-#Tracing
 management:
   tracing:
     sampling:
       probability: 1.0
+  endpoint:
+    health:
+      validate-group-membership: false
+      group:
+        liveliness:
+          include: diskSpace, db, ping
+  probes:
+    enabled: true
+
+tracing:
+  url: http://localhost:4317
 
 server:
   port: 0

@@ -11,22 +11,33 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://service-discovery:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
 
-#Tracing
-management:
-  tracing:
-    sampling:
-      probability: 1.0
 
 server:
   port: 0
 
 keycloak:
-  url: http://keycloak:8080
+  url: http://localhost:8080
   client:
     id: fairflow
-    secret: 3thEeC87gO1MhtT9vSAhY9vV2mV2oEY7
+    secret: WVzvKQ3CNgbZCLEmHNOloO5KKWb2XbRB
   username: admin
   password: admin
   realm: safari
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoint:
+    health:
+      validate-group-membership: false
+      group:
+        liveliness:
+          include: diskSpace, db, ping
+  probes:
+    enabled: true
+
+tracing:
+  url: http://localhost:4317
